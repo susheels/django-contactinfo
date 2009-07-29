@@ -31,7 +31,7 @@ class Address(models.Model):
         verbose_name_plural = 'addresses'
     
     def __unicode__(self):
-        return "%s, %s, %s %i" % \
+        return "%s, %s, %s %s" % \
             (self.street, self.city, self.state_province, self.postal_code)
 
 
