@@ -4,7 +4,22 @@
 
 {% block javascript %}
 {{ location_form.media }}
-{{ address_form.media }}
+<script type="text/javascript">
+jQuery(function ($) {
+    $('tbody.address_formset').change(function (e) {
+        // hide the form to enter a new address if an address exists already
+    	existing_fields = $('tbody.address_formset .field.existing-object').length;
+        if (existing_fields > 0) {
+        	$('tbody.address_formset .field.new-object').hide();
+        }
+    });
+    $('tbody.address_formset').change();
+});
+</script>
+{% endblock %}
+
+{% block css %}
+<link charset='UTF-8' rel='stylesheet' type='text/css' media='screen' href='{{ MEDIA_URL }}css/django-contactinfo.css' />
 {% endblock %}
 
 {% block content %}
@@ -13,10 +28,16 @@
 
 <form id='create-edit-person' accept-charset='UTF-8' method='post' action=''>
     <table class='vertical'>
-        {{ location_form }}
-        <tbody class="address_form">
-        {{ address_form }}
+        {% include 'contactinfo/_location_form.html' %}
+        
+        <tbody class="form address_formset">
+        {% include 'contactinfo/_address_formset.html' %}
         </tbody>
+        
+        <tbody class="form phone_formset">
+        {% include 'contactinfo/_phone_formset.html' %}
+        </tbody>
+        
         <tr>
             <td>&nbsp;</td>
             <td class='submit'>
