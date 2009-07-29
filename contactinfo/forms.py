@@ -4,16 +4,73 @@ from django import forms
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 
+from django.core.urlresolvers import reverse
+from django.forms import widgets
+from django.utils.safestring import mark_safe
+
 from caktus.decorators import requires_kwarg
 
 from contactinfo import models as contactinfo
+from countries.models import Country
+
+class CountrySelect(widgets.Select):
+    class Media:
+        js = (
+            'js/jquery-1.3.2.min.js',
+        )
+    
+    def _javascript(self, name):
+        url_base = reverse('get_address_form_html', args=('COUNTRY_TOKEN',))
+        return mark_safe("""
+<script type="text/javascript">
+jQuery(function ($) {
+    $('select[name=%s]').change(function (e) {
+        var url_base = '%s';
+        var country = $(e.target).val();
+        var url = url_base.replace('COUNTRY_TOKEN', country);
+        $.get(url, function(data, textStatus) {
+            var street = $('#id_street').val();
+            var city = $('#id_city').val();
+            var state_province = $('#id_state_province').val();
+            var postal_code = $('#id_postal_code').val();
+            
+            $('tbody.address_form').html(data);
+            
+            $('#id_street').val(street);
+            $('#id_city').val(city);
+            $('#id_state_province').val(state_province);
+            $('#id_postal_code').val(postal_code);
+        });
+    });
+});
+</script>""" % (name, url_base))
+
+    def render(self, name, value, attrs=None, choices=()):
+        return super(CountrySelect, self).render(
+            name, value, attrs, choices,
+        ) + self._javascript(name)
 
 
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = contactinfo.Location
+        fields = ('type', 'country',)
+
+    def __init__(self, *args, **kwargs):
+        super(LocationForm, self).__init__(*args, **kwargs)
+        self.fields['country'].widget = \
+          CountrySelect(choices=self.fields['country'].widget.choices)
+
+  
 class AddressForm(forms.ModelForm):
     """
     Model form for international postal addresses in localflavor countries.
     """
     IMPORT_BASE = 'django.contrib.localflavor.%s.forms'
+    class Media:
+        css = {
+            'all': ('css/django-contactinfo.css',),
+        }
     
     class Meta:
         model = contactinfo.Address
@@ -69,18 +126,16 @@ class AddressForm(forms.ModelForm):
             label = _('Postal Code')
         return field(label=label)
     
-    @requires_kwarg('location')
+    @requires_kwarg('country')
     def __init__(self, *args, **kwargs):
-        self.location = kwargs.pop('location')
+        self.country = kwargs.pop('country')
         super(AddressForm, self).__init__(*args, **kwargs)
         
-        if self.location and self.location.country.iso:
+        if self.country and self.country.iso:
             self.fields['postal_code'] = \
-              self._get_postal_code_field(self.location.country.iso)
+              self._get_postal_code_field(self.country.iso)
             self.fields['state_province'] = \
-              self._get_state_province_field(self.location.country.iso)
-            
-            
+              self._get_state_province_field(self.country.iso)
 
 
 class PhoneForm(forms.ModelForm):
