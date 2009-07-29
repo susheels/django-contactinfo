@@ -1,0 +1,9 @@
+{% for field in location_form %}
+<tr>
+    <th>{{ field.label_tag }}:</th>
+    <td>
+        {{ field.errors }}
+        <div id='field-{{ field.html_name }}'>{{ field }}</div>
+    </td>
+</tr>
+{% endfor %}
