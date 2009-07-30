@@ -4,11 +4,13 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import permission_required
 
 from contactinfo.forms import LocationForm, AddressFormSet, PhoneFormSet
 from countries.models import Country
 from contactinfo import models as contactinfo
 
+@permission_required('contactinfo.change_location')
 def create_edit_location(request, location_id=None):
     if location_id:
         location = get_object_or_404(contactinfo.Location, pk=location_id)
@@ -78,6 +80,7 @@ def create_edit_location(request, location_id=None):
     )
 
 
+@permission_required('contactinfo.change_location')
 def get_address_formset_html(request):
     default_iso = getattr(settings, 'DEFAULT_COUNTRY_ISO', 'US')
     country_iso = request.GET.get('country', default_iso)
