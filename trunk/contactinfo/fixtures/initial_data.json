@@ -14,5 +14,13 @@
          "name": "Office", 
          "slug": "office"
       }
+   },
+   {
+      "pk": 3, 
+      "model": "contactinfo.locationtype", 
+      "fields": {
+         "name": "Mobile", 
+         "slug": "mobile"
+      }
    }
 ]
