@@ -1,16 +1,16 @@
 /* make the location type radio buttons display inline */
-#field-type {
+.form .field.type {
 	padding: 0;
 	margin: 0;
 }
 
-#field-type ul {
+.form .field.type ul {
 	list-style-type: none;
 	padding: 0;
 	margin: 0;
 }
 
-#field-type li {
+.form .field.type li {
 	display: inline;
 	margin-right: 1em;
 }
