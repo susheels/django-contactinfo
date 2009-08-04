@@ -47,7 +47,7 @@ class Address(models.Model):
 
 
 class Phone(models.Model):
-    TYPE_CHOICES = (
+    PHONE_TYPES = (
         ('landline', 'Land Line'),
         ('mobile', 'Mobile'),
         ('fax', 'Fax')
@@ -57,7 +57,7 @@ class Phone(models.Model):
     number = models.CharField(max_length=30)
     type = models.CharField(
         max_length=15, 
-        choices=TYPE_CHOICES, 
+        choices=PHONE_TYPES, 
         default='landline',
     )
     
