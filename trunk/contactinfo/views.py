@@ -6,78 +6,39 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import permission_required
 
-from contactinfo.forms import LocationForm, AddressFormSet, PhoneFormSet
+from contactinfo.forms import AddressFormSet
 from countries.models import Country
 from contactinfo import models as contactinfo
+from contactinfo import helpers
 
 @permission_required('contactinfo.change_location')
 def create_edit_location(request, location_id=None):
+    """ 
+    This is an example of how to use the create_edit_location helper in your
+    own view.  Substitute your own template and action to perform once
+    the object is saved.
+    """
     if location_id:
         location = get_object_or_404(contactinfo.Location, pk=location_id)
     else:
         location = None
-    if request.POST:
-        location_form = LocationForm(request.POST, instance=location)
-        if location_form.is_valid():
-            location = location_form.save(commit=False)
-            address_formset = AddressFormSet(
-                request.POST, 
-                instance=location, 
-                prefix='addresses',
-            )
-            phone_formset = PhoneFormSet(
-                request.POST, 
-                instance=location, 
-                prefix='phones',
-            )
-            if address_formset.is_valid() and phone_formset.is_valid():
-                location.save()
-                addresses = address_formset.save(commit=False)
-                for address in addresses:
-                    address.location = location
-                    address.save()
-                phones = phone_formset.save(commit=False)
-                for phone in phones:
-                    phone.location = location
-                    phone.save()
-                if 'next' in request.GET:
-                    return HttpResponseRedirect(request.GET['next'])
-                else:
-                    edit_url = reverse('edit_location', args=(location.id,))
-                    return HttpResponseRedirect(edit_url)
-        else:
-            address_formset = AddressFormSet(
-                request.POST, 
-                prefix='addresses',
-                instance=location or contactinfo.Location(),
-            )
-            phone_formset = PhoneFormSet(
-                request.POST,
-                prefix='phones',
-                instance=location or contactinfo.Location(),
-            )
-    else:
-        location_form = LocationForm(instance=location)
-        address_formset = AddressFormSet(
-            prefix='addresses',
-            instance=location or contactinfo.Location(),
-        )
-        phone_formset = PhoneFormSet(
-            prefix='phones',
-            instance=location or contactinfo.Location(),
-        )
-    
-    context = {
-        'location': location,
-        'location_form': location_form,
-        'address_formset': address_formset,
-        'phone_formset': phone_formset,
-    }
-    return render_to_response(
-        'contactinfo/create_edit_location.html',
-        context,
-        context_instance=RequestContext(request)
+    location, saved, context = helpers.create_edit_location(
+        request, 
+        location, 
+        True,
     )
+    if saved:
+        if 'next' in request.GET:
+            return HttpResponseRedirect(request.GET['next'])
+        else:
+            edit_url = reverse('edit_location', args=(location.id,))
+            return HttpResponseRedirect(edit_url)
+    else:
+        return render_to_response(
+            'contactinfo/create_edit_location.html',
+            context,
+            context_instance=RequestContext(request)
+        )
 
 
 @permission_required('contactinfo.change_location')
