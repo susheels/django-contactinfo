@@ -33,10 +33,10 @@ class Location(models.Model):
 class Address(models.Model):
     location = models.ForeignKey(Location, related_name='addresses')
     
-    street = models.TextField()
-    city = models.CharField(max_length=255)
-    state_province = models.CharField(max_length=255)
-    postal_code = models.CharField(max_length=255)
+    street = models.TextField(blank=True)
+    city = models.CharField(max_length=255, blank=True)
+    state_province = models.CharField(max_length=255, blank=True)
+    postal_code = models.CharField(max_length=255, blank=True)
     
     class Meta:
         verbose_name_plural = 'addresses'

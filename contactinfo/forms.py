@@ -84,7 +84,7 @@ def get_localflavor_fieldclass(iso, class_name):
 
 
 class BaseAddressFormSet(BaseInlineFormSet):  
-    def _get_state_province_field(self, iso):
+    def _get_state_province_field(self, iso, old_field=None):
         field_names = (
             (_('State'), 'StateField', 'StateSelect'),
             (_('Province'), 'ProvinceField', 'ProvinceSelect'),
@@ -94,20 +94,23 @@ class BaseAddressFormSet(BaseInlineFormSet):
         widget = None
         field = None
         for label, field_name, widget_name in field_names:
-            field = get_localflavor_fieldclass(iso, field_name)
+            Field = get_localflavor_fieldclass(iso, field_name)
             widget = get_localflavor_fieldclass(iso, widget_name)
             if field or widget:
                 break
-        if not field and not widget:
+        if not Field and not widget:
             label = _('State or Province')
-        if not field:
-            field = forms.CharField
+        if not Field:
+            Field = forms.CharField
         if widget:
-            return field(label=label, widget=widget)
+            field_instance = Field(label=label, widget=widget)
         else:
-            return field(label=label)
+            field_instance = Field(label=label)
+        if old_field:
+            field_instance.required = old_field.required
+        return field_instance
         
-    def _get_postal_code_field(self, iso):
+    def _get_postal_code_field(self, iso, old_field=None):
         field_names = (
             (_('Zip Code'), 'ZipCodeField'),
             (_('Postcode'), 'PostcodeField'),
@@ -115,23 +118,31 @@ class BaseAddressFormSet(BaseInlineFormSet):
             (_('Postal Code'), 'PostalCodeField'),
         )
         for label, field_name in field_names:
-            field = get_localflavor_fieldclass(iso, field_name)
-            if field:
+            Field = get_localflavor_fieldclass(iso, field_name)
+            if Field:
                 break
-        if not field:
-            field = forms.CharField
+        if not Field:
+            Field = forms.CharField
             label = _('Postal Code')
-        return field(label=label)
+        field_instance = Field(label=label)
+        if old_field:
+            field_instance.required = old_field.required
+        return field_instance
         
     def add_fields(self, form, index):
         super(BaseAddressFormSet, self).add_fields(form, index)
         
         if self.instance.country and self.instance.country.iso:
             country_iso = self.instance.country.iso
-            form.fields['postal_code'] = \
-              self._get_postal_code_field(country_iso)
+            form.fields['postal_code'] = self._get_postal_code_field(
+                country_iso, 
+                old_field=form.fields['postal_code'],
+            )
             form.fields['state_province'] = \
-              self._get_state_province_field(country_iso)
+              self._get_state_province_field(
+                country_iso, 
+                old_field=form.fields['state_province'],
+            )
         else:
             form.fields['postal_code'].label = _('Postal Code')
             form.fields['state_province'].label = _('State or Province')
