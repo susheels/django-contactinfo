@@ -9,8 +9,6 @@ from django.forms import widgets
 from django.forms.models import inlineformset_factory, BaseInlineFormSet
 from django.utils.safestring import mark_safe
 
-from caktus.decorators import requires_kwarg
-
 from contactinfo import models as contactinfo
 from countries.models import Country
 
