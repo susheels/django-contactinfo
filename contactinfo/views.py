@@ -52,7 +52,10 @@ def get_address_formset_html(request):
     else:
         location = contactinfo.Location()
     location.country = country
-    address_formset = AddressFormSet(instance=location)
+    address_formset = AddressFormSet(
+        instance=location, 
+        prefix=helpers.ADDRESSES_PREFIX,
+    )
     return render_to_response(
         'contactinfo/_address_formset.html',
         {'address_formset': address_formset},
