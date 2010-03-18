@@ -14,12 +14,12 @@ class LocationType(models.Model):
 
 def get_default_locationtype():
     default_slug = getattr(settings, 'DEFAULT_LOCATIONTYPE_SLUG', 'office')
-    return LocationType.objects.get(slug=default_slug)
+    return LocationType.objects.get(slug=default_slug).pk
 
 
 def get_default_country():
     default_iso = getattr(settings, 'DEFAULT_COUNTRY_ISO', 'US')
-    return countries.Country.objects.get(iso=default_iso)
+    return countries.Country.objects.get(iso=default_iso).pk
 
 
 class Location(models.Model):
